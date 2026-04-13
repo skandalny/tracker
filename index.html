@@ -627,7 +627,7 @@
             npcSpellsMap.clear();
             data.forEach(entry => {
                 if (entry.npcName && entry.spellName) {
-                    const npc = entry.npcName.split('/')[0].trim().toLowerCase();
+                    const npc = normalizeNpcName(entry.npcName);
                     if (!npcSpellsMap.has(npc)) npcSpellsMap.set(npc, new Set());
                     npcSpellsMap.get(npc).add(entry.spellName);
                 }
@@ -740,11 +740,19 @@
         return cleanText(text);
     }
 
+    function normalizeNpcName(name) {
+        return String(name || '')
+            .split('/')[0]
+            .trim()
+            .toLowerCase()
+            .replace(/ё/g, 'е');
+    }
+
     // ========== Поиск заклинания по русскому названию ==========
     function findSpellByName(rusName) {
-        const lower = rusName.toLowerCase();
+        const lower = String(rusName || '').trim().toLowerCase().replace(/ё/g, 'е');
         return allSpellsList.find(s => {
-            const fullName = s.spellName.toLowerCase();
+            const fullName = String(s.spellName || '').trim().toLowerCase().replace(/ё/g, 'е');
             const rusPart = fullName.split('/')[0].trim();
             return rusPart === lower || fullName === lower;
         });
@@ -851,7 +859,7 @@
         document.getElementById('detailDescription').innerHTML = highlightSpellsInText(full.description) || '—';
         
         // === Сбор заклинаний ===
-        const npcKey = monsterName.toLowerCase();
+        const npcKey = normalizeNpcName(monsterName);
         const spellNameSet = new Set(npcSpellsMap.get(npcKey) || []);
         if (full.features) {
             full.features.forEach(f => {
